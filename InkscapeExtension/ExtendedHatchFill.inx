@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+  <name> Extended Hatch Fill </name>
+  <id>org.inkscape.tutorial.extended_hatch_fill</id>
+
+ <param name="even_color" type="color" gui-text="Stroke color for even number of nodes:">0000000000</param>
+
+  <effect>
+    <effects-menu>
+      <submenu name="!Extended Hatch Fill"/>
+      <submenu name="Testing"/>
+    </effects-menu>
+  </effect>
+
+  <script>
+    <command location="inx" interpreter="python">ExtendedHatchFill.py</command>
+  </script>
+
+</inkscape-extension>
