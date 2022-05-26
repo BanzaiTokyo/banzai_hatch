@@ -1,1 +1,2 @@
-# hatch_shapes
+# BanzaiHatch
+natural looking shape hatching extension for Inkscape
