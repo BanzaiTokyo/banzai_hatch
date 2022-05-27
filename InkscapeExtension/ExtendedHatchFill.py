@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-#
 """
 This extension changes the fill of all selected elements to blue.
 """
