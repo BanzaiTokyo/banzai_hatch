@@ -21,7 +21,7 @@
   </effect>
 
   <script>
-    <command location="inx" interpreter="python">bezierdrawing.py</command>
+    <command location="inx" interpreter="python">ExtendedHatchFill.py</command>
   </script>
 
 </inkscape-extension>
