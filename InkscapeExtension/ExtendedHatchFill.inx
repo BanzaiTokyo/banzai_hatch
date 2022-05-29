@@ -3,17 +3,25 @@
   <name> Extended Hatch Fill </name>
   <id>org.inkscape.tutorial.extended_hatch_fill</id>
 
- <param name="even_color" type="color" gui-text="Stroke color for even number of nodes:">0000000000</param>
+<param name="radio_type_hatch" type="optiongroup"  gui-text="Choose the type of hatching ">
+    <option value="hatch_wavy">Wavy</option>
+    <option value="hatch_cross">Cross</option>
+    <option value="hatch_spiral">Spiral</option>
+    <option value="hatch_pencil">Pencil</option>
+  </param>
+
+<param name="size_hatch" type="int" min="10" max="100" gui-text="Size, %">1</param>
+
 
   <effect>
     <effects-menu>
       <submenu name="!Extended Hatch Fill"/>
-      <submenu name="Testing"/>
+
     </effects-menu>
   </effect>
 
   <script>
-    <command location="inx" interpreter="python">ExtendedHatchFill.py</command>
+    <command location="inx" interpreter="python">bezierdrawing.py</command>
   </script>
 
 </inkscape-extension>

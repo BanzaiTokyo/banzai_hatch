@@ -1,3 +1,4 @@
+from turtle import radians
 import inkex
 from inkex import Circle, Ellipse, Polygon, Line, Rectangle, Path, PathElement
 from random import randint
@@ -6,8 +7,12 @@ from PIL import ImageGrab
 class ExtendedHatchFill(inkex.EffectExtension):
     """Drawing a simple bezizer"""
 
+# Getting values from the interface
+
     def add_arguments(self, pars):
-        pars.add_argument("--even_color", type=inkex.Color, default=inkex.Color("blue"))
+        pars.add_argument("--radio_type_hatch", dest="fill_type", default="hatch_wavy")
+        pars.add_argument("--size_hatch", type=int, default=10)
+
 
     def effect(self):
         s = self.svg
@@ -15,6 +20,9 @@ class ExtendedHatchFill(inkex.EffectExtension):
         pic = ImageGrab.grab()
         #hatching bezier selected rectangular objects
         for elem in self.svg.selection:
+            if self.options.fill_type == "Cross": # How do I get the fill_type value from the add_arguments method here ?
+                elem.style = { "fill": "green", "stroke": "black" }
+                # elem.style['fill'] = "green"
             b = elem.bounding_box()
             dxx = b.left # object offsets for bitmap hatching
             dyy = b.top
@@ -25,10 +33,6 @@ class ExtendedHatchFill(inkex.EffectExtension):
                     a = [['M', [x, y]],
                         ['Q', [x + dx, y + dy, x + 40, y]],
                         ['T', [x + 40, y]]]
-
-                    # below is code for bitmap hatching objects (in the example by red)
-                    # without debugger I can't understand why it gives me an error
-                    # The error is shown at line 23 (for ...)
 
                     # r, g, b = pic.getpixel((int(x), int(y)))
                     # if r == 255 and g == 0 and b == 0:
