@@ -1,3 +1,4 @@
+from random import randint
 import sys
 import math
 from lxml import etree
@@ -100,7 +101,18 @@ class ExtendedHatchFill(inkex.EffectExtension):
                     self.interstices((h[0], h[1]), (h[2], h[3]))
 
     def buildHatchLinePath(self, pt1, pt2):
-        return 'M {0:f},{1:f} l {2:f},{3:f} '.format(pt1[0], pt1[1], pt2[0] - pt1[0], pt2[1] - pt1[1])
+        x1, y1 = pt1[0], pt1[1]
+        x2, y2 = pt2[0], pt2[1]
+        w = abs(x2 - x1)
+        h = abs(y2 - y1)
+        od = self.options.outer_dist  # Outer contour indent
+        cc = self.options.curv_coef  # Curvature coefficient (steepness angle)
+        dx1 = randint(-cc, cc)
+        dx2 = randint(-cc, cc)
+        return f'M {x1 - od} {y1 + od} \
+                  c {(-w + dx1) / 3}, {h / 3} \
+                    {(-w + dx2) / 1.5}, {h / 1.5} \
+                    {x2 - x1 + 2 * od} {y2 - y1 - 2 * od}'
 
     def joinFillsWithNode(self, node, path):
         if not path:
@@ -112,7 +124,7 @@ class ExtendedHatchFill(inkex.EffectExtension):
         g.append(node)
         style = Style(node.get('style'))
         style = f"stroke:{style.get('stroke', '#000000')};stroke-width:{style.get('stroke-width', '1.0')}"
-        line_attribs = {'style': style, 'd': path}
+        line_attribs = {'style': style, 'd': path, 'fill': 'none'}
         tran = node.get('transform')
         if tran:
             line_attribs['transform'] = tran
@@ -121,7 +133,7 @@ class ExtendedHatchFill(inkex.EffectExtension):
     @staticmethod
     def distanceSquared(p1, p2):
         dx = p2[0] - p1[0]
-        dy = p2[1] - p1[1]    
+        dy = p2[1] - p1[1]
         return dx * dx + dy * dy
 
     @staticmethod
@@ -129,7 +141,7 @@ class ExtendedHatchFill(inkex.EffectExtension):
         while True:
             while True:
                 if i >= len(sp):
-                    return    
+                    return
                 p0 = sp[i - 1][1]
                 p1 = sp[i - 1][2]
                 p2 = sp[i][0]
@@ -150,6 +162,7 @@ class ExtendedHatchFill(inkex.EffectExtension):
             (x1, y1) = param1
             (x2, y2) = param2
             return x1 + t * (x2 - x1), y1 + t * (y2 - y1)
+
         m1 = tpoint(p0, p1)
         m2 = tpoint(p1, p2)
         m3 = tpoint(p2, p3)
@@ -286,18 +299,24 @@ class ExtendedHatchFill(inkex.EffectExtension):
                                 intersection[0] = p1[0] + s * (p2[0] - p1[0])
                                 intersection[1] = p1[1] + s * (p2[1] - p1[1])
                                 if abs(angle_difference_radians) < math.pi / 2:
-                                    dist_intersection_to_relevant_end = math.hypot(p3[0] - intersection[0], p3[1] - intersection[1])
-                                    dist_intersection_to_irrelevant_end = math.hypot(p4[0] - intersection[0], p4[1] - intersection[1])
+                                    dist_intersection_to_relevant_end = math.hypot(p3[0] - intersection[0],
+                                                                                   p3[1] - intersection[1])
+                                    dist_intersection_to_irrelevant_end = math.hypot(p4[0] - intersection[0],
+                                                                                     p4[1] - intersection[1])
                                 else:
-                                    dist_intersection_to_relevant_end = math.hypot(p4[0] - intersection[0], p4[1] - intersection[1])
-                                    dist_intersection_to_irrelevant_end = math.hypot(p3[0] - intersection[0], p3[1] - intersection[1])
+                                    dist_intersection_to_relevant_end = math.hypot(p4[0] - intersection[0],
+                                                                                   p4[1] - intersection[1])
+                                    dist_intersection_to_irrelevant_end = math.hypot(p3[0] - intersection[0],
+                                                                                     p3[1] - intersection[1])
                                 prelim_length_to_be_removed = f_hold_back_steps / f_abs_sin_of_join_angle
                                 length_remove_starting_hatch = prelim_length_to_be_removed
                                 length_remove_ending_hatch = prelim_length_to_be_removed
 
-                                if prelim_length_to_be_removed > (dist_intersection_to_relevant_end + f_hold_back_steps):
+                                if prelim_length_to_be_removed > (
+                                        dist_intersection_to_relevant_end + f_hold_back_steps):
                                     length_remove_starting_hatch = dist_intersection_to_relevant_end + f_hold_back_steps
-                                if prelim_length_to_be_removed > (dist_intersection_to_irrelevant_end + f_hold_back_steps):
+                                if prelim_length_to_be_removed > (
+                                        dist_intersection_to_irrelevant_end + f_hold_back_steps):
                                     length_remove_ending_hatch = dist_intersection_to_irrelevant_end + f_hold_back_steps
 
                                 d_and_a.append((s, path, length_remove_starting_hatch, length_remove_ending_hatch))
@@ -339,7 +358,8 @@ class ExtendedHatchFill(inkex.EffectExtension):
                 f_initial_hatch_length = math.hypot(x2 - x1, y2 - y1)
                 f_length_to_be_removed_from_pt1 = d_and_a[i][3]
                 f_length_to_be_removed_from_pt2 = d_and_a[i + 1][2]
-                if (f_initial_hatch_length - (f_length_to_be_removed_from_pt1 + f_length_to_be_removed_from_pt2)) > f_min_allowed_hatch_length:
+                if (f_initial_hatch_length - (
+                        f_length_to_be_removed_from_pt1 + f_length_to_be_removed_from_pt2)) > f_min_allowed_hatch_length:
                     pt1 = self.relativeControlPointPosition(f_length_to_be_removed_from_pt1, x2 - x1, y2 - y1, x1, y1)
                     pt2 = self.relativeControlPointPosition(f_length_to_be_removed_from_pt2, x1 - x2, y1 - y2, x2, y2)
                     hatches[d_and_a[i][1]].append([[pt1[0], pt1[1]], [pt2[0], pt2[1]]])
