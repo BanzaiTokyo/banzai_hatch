@@ -1,3 +1,4 @@
+from random import randint
 import sys
 import math
 from lxml import etree
@@ -25,6 +26,11 @@ class ExtendedHatchFill(inkex.EffectExtension):
         pars.add_argument("--hatchAngle", type=float, default=90)
         pars.add_argument("--crossHatch", type=inkex.Boolean, default=False)
         pars.add_argument("--inset_dist", type=float, default=0)
+        pars.add_argument("--number_segm", type=int, default=4)
+        pars.add_argument("--outer_dist", type=float, default=1)
+        pars.add_argument("--curv_coef", type=int, default=10)
+        pars.add_argument("--mode", default="quadratic", help="Line type")
+        pars.add_argument("--len_hatch", type=int, default=10)
 
     def effect(self):
         self.hatch_spacing_px = self.options.hatchSpacing
@@ -96,7 +102,91 @@ class ExtendedHatchFill(inkex.EffectExtension):
                     self.interstices((h[0], h[1]), (h[2], h[3]))
 
     def buildHatchLinePath(self, pt1, pt2):
-        return 'M {0:f},{1:f} l {2:f},{3:f} '.format(pt1[0], pt1[1], pt2[0] - pt1[0], pt2[1] - pt1[1])
+        x1, y1 = pt1[0], pt1[1]
+        x2, y2 = pt2[0], pt2[1]
+
+        od = self.options.outer_dist  # Outer contour indent
+        cc = self.options.curv_coef  # Curvature coefficient (steepness angle)
+
+        # absolute length of the segment between the points
+        totLen = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+        w = x2 - x1
+        h = y2 - y1
+        wx = w / totLen  # * math.cos(math.radians((angle)) # cos
+        hx = h / totLen  # * math.sin(math.radians((angle)) # sin
+
+        rnd = [randint(-cc, cc) for _ in range(4)]
+
+        if self.options.mode == "linear":
+            path = f'M {x1 + rnd[0] + od * wx}, {y1 + rnd[1] + od * hx} \
+                   l {x2 - x1 - rnd[2] - 2 * od * wx}, {y2 - y1 - rnd[3] - 2 * od * hx}'
+
+        elif self.options.mode == "quadratic":
+            path = f'M {x1 + od * wx} {y1 + od * hx} \
+                     c {w / 3 + rnd[0] * hx}, {h / 3 - rnd[0] * wx} \
+                       {w / 3 - rnd[1] * hx}, {h / 3 + rnd[1] * wx} \
+                       {x2 - x1 - 2 * od * wx} {y2 - y1 - 2 * od * hx}'
+
+        if self.options.mode == "cubic":
+            path = f'M {x1 + od * wx} {y1 + od * hx} \
+                     q {w / 4 + 2 * rnd[0] * hx}, {h / 4 + 2 * rnd[0] * wx} \
+                       {w / 2 + rnd[1] * hx}, {h / 2 + rnd[1] * wx} \
+                     t {(x2 - x1) / 2 - 2 * od * wx}, {(y2 - y1) / 2 - 2 * od * hx}'
+
+        elif self.options.mode == "hatch_line":
+            number_segm = self.options.number_segm
+            dx = (w - od * wx) / number_segm
+            dy = (h - od * hx) / number_segm
+            path = f'M {x1 + od * wx}, {y1 + od * hx} l {dx - rnd[0] - od * wx} {dy - rnd[1] - od * hx}'
+            for _ in range(number_segm - 1):
+                x1 += dx
+                y1 += dy
+                path += f'M {x1}, {y1} l {dx - rnd[0]} {dy - rnd[1]}'
+
+        elif self.options.mode == "hatch_curv":
+            path = ''
+            number_segm = int(totLen / self.options.len_hatch)
+            dx = (w - 2 * od * wx) / number_segm
+            dy = (h - 2 * od * hx) / number_segm
+            for _ in range(number_segm):
+                path += f'M {x1 + od * wx}, {y1 + od * hx} \
+                           c {rnd[0] / 2}, {rnd[1] / 2} \
+                             {rnd[0]}, {-2 * rnd[1] / 2} \
+                             {dx - 1} {dy - 1}'
+                x1 += dx
+                y1 += dy
+
+        elif self.options.mode == "wavy":
+            path = ''
+            number_segm = int(totLen / self.options.len_hatch)
+            dx = (w - 2 * od * wx) / number_segm
+            dy = (h - 2 * od * hx) / number_segm
+            x1 += od * wx
+            y1 += od * hx
+            for _ in range(number_segm):
+                path += f'M {x1}, {y1} \
+                           c {dx / 3 + rnd[0]}, {abs(rnd[1])} \
+                             {dx / 3 * 2 + rnd[2]},{-abs(rnd[3])}  \
+                             {dx} {dy}'
+                x1 += dx
+                y1 += dy
+
+        elif self.options.mode == "oval":
+            rds = self.options.len_hatch
+            path = ''
+            dxR = (rds * w - 8 * od * wx) / totLen
+            dyR = (rds * h - 8 * od * hx) / totLen
+            number_segm = int(totLen / rds)
+            x1 += 2 * od * wx
+            y1 += 2 * od * hx
+            for _ in range(number_segm):
+                rnd = [randint(-cc, cc) for _ in range(8)]
+                path += f'M {x1}, {y1} c {abs(rnd[0])}, {abs(rnd[2]) * 2}  {-rds + rnd[4]}, {rds / 2 + rnd[6]} {-rds} 0 \
+                           M {x1}, {y1} c {abs(rnd[1])}, {-abs(rnd[3]) * 2}  {-rds + rnd[5]}, {-rds / 2 + rnd[7]} {-rds} 0 '
+                x1 += dxR
+                y1 += dyR
+
+        return path
 
     def joinFillsWithNode(self, node, path):
         if not path:
@@ -108,7 +198,7 @@ class ExtendedHatchFill(inkex.EffectExtension):
         g.append(node)
         style = Style(node.get('style'))
         style = f"stroke:{style.get('stroke', '#000000')};stroke-width:{style.get('stroke-width', '1.0')}"
-        line_attribs = {'style': style, 'd': path}
+        line_attribs = {'style': style, 'd': path, 'fill': 'none'}
         tran = node.get('transform')
         if tran:
             line_attribs['transform'] = tran
@@ -117,7 +207,7 @@ class ExtendedHatchFill(inkex.EffectExtension):
     @staticmethod
     def distanceSquared(p1, p2):
         dx = p2[0] - p1[0]
-        dy = p2[1] - p1[1]    
+        dy = p2[1] - p1[1]
         return dx * dx + dy * dy
 
     @staticmethod
@@ -125,7 +215,7 @@ class ExtendedHatchFill(inkex.EffectExtension):
         while True:
             while True:
                 if i >= len(sp):
-                    return    
+                    return
                 p0 = sp[i - 1][1]
                 p1 = sp[i - 1][2]
                 p2 = sp[i][0]
@@ -146,6 +236,7 @@ class ExtendedHatchFill(inkex.EffectExtension):
             (x1, y1) = param1
             (x2, y2) = param2
             return x1 + t * (x2 - x1), y1 + t * (y2 - y1)
+
         m1 = tpoint(p0, p1)
         m2 = tpoint(p1, p2)
         m3 = tpoint(p2, p3)
@@ -282,18 +373,24 @@ class ExtendedHatchFill(inkex.EffectExtension):
                                 intersection[0] = p1[0] + s * (p2[0] - p1[0])
                                 intersection[1] = p1[1] + s * (p2[1] - p1[1])
                                 if abs(angle_difference_radians) < math.pi / 2:
-                                    dist_intersection_to_relevant_end = math.hypot(p3[0] - intersection[0], p3[1] - intersection[1])
-                                    dist_intersection_to_irrelevant_end = math.hypot(p4[0] - intersection[0], p4[1] - intersection[1])
+                                    dist_intersection_to_relevant_end = math.hypot(p3[0] - intersection[0],
+                                                                                   p3[1] - intersection[1])
+                                    dist_intersection_to_irrelevant_end = math.hypot(p4[0] - intersection[0],
+                                                                                     p4[1] - intersection[1])
                                 else:
-                                    dist_intersection_to_relevant_end = math.hypot(p4[0] - intersection[0], p4[1] - intersection[1])
-                                    dist_intersection_to_irrelevant_end = math.hypot(p3[0] - intersection[0], p3[1] - intersection[1])
+                                    dist_intersection_to_relevant_end = math.hypot(p4[0] - intersection[0],
+                                                                                   p4[1] - intersection[1])
+                                    dist_intersection_to_irrelevant_end = math.hypot(p3[0] - intersection[0],
+                                                                                     p3[1] - intersection[1])
                                 prelim_length_to_be_removed = f_hold_back_steps / f_abs_sin_of_join_angle
                                 length_remove_starting_hatch = prelim_length_to_be_removed
                                 length_remove_ending_hatch = prelim_length_to_be_removed
 
-                                if prelim_length_to_be_removed > (dist_intersection_to_relevant_end + f_hold_back_steps):
+                                if prelim_length_to_be_removed > (
+                                        dist_intersection_to_relevant_end + f_hold_back_steps):
                                     length_remove_starting_hatch = dist_intersection_to_relevant_end + f_hold_back_steps
-                                if prelim_length_to_be_removed > (dist_intersection_to_irrelevant_end + f_hold_back_steps):
+                                if prelim_length_to_be_removed > (
+                                        dist_intersection_to_irrelevant_end + f_hold_back_steps):
                                     length_remove_ending_hatch = dist_intersection_to_irrelevant_end + f_hold_back_steps
 
                                 d_and_a.append((s, path, length_remove_starting_hatch, length_remove_ending_hatch))
@@ -335,7 +432,8 @@ class ExtendedHatchFill(inkex.EffectExtension):
                 f_initial_hatch_length = math.hypot(x2 - x1, y2 - y1)
                 f_length_to_be_removed_from_pt1 = d_and_a[i][3]
                 f_length_to_be_removed_from_pt2 = d_and_a[i + 1][2]
-                if (f_initial_hatch_length - (f_length_to_be_removed_from_pt1 + f_length_to_be_removed_from_pt2)) > f_min_allowed_hatch_length:
+                if (f_initial_hatch_length - (
+                        f_length_to_be_removed_from_pt1 + f_length_to_be_removed_from_pt2)) > f_min_allowed_hatch_length:
                     pt1 = self.relativeControlPointPosition(f_length_to_be_removed_from_pt1, x2 - x1, y2 - y1, x1, y1)
                     pt2 = self.relativeControlPointPosition(f_length_to_be_removed_from_pt2, x1 - x2, y1 - y2, x2, y2)
                     hatches[d_and_a[i][1]].append([[pt1[0], pt1[1]], [pt2[0], pt2[1]]])
