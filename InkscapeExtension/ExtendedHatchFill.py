@@ -25,6 +25,10 @@ class ExtendedHatchFill(inkex.EffectExtension):
         pars.add_argument("--hatchAngle", type=float, default=90)
         pars.add_argument("--crossHatch", type=inkex.Boolean, default=False)
         pars.add_argument("--inset_dist", type=float, default=0)
+        pars.add_argument("--number_segm", type=int, default=3)
+        pars.add_argument("--outer_dist", type=float, default=1)
+        pars.add_argument("--curv_coef", type=int, default=10)
+        pars.add_argument("--mode", default="quadratic", help="Line type")
 
     def effect(self):
         self.hatch_spacing_px = self.options.hatchSpacing
