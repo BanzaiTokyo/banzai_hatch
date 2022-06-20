@@ -12,7 +12,6 @@
 	_gui-text="Inset Distance, in selected units">0.5</param>
   <param name="number_segm" type="int"  min="1" max="10"
 	_gui-text="Number of segments">4</param>
-
    <param name="outer_dist" type="float"  min="0" max="10" precision="3"  indent="2"
 	_gui-text="Outer contour indent">0.5</param>
 
