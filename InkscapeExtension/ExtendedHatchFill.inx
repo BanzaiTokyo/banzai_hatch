@@ -12,13 +12,13 @@
 	_gui-text="Inset Distance, in selected units">0.5</param>
   <param name="number_segm" type="int"  min="1" max="10"
 	_gui-text="Number of segments">4</param>
-   
+
    <param name="outer_dist" type="float"  min="0" max="10" precision="3"  indent="2"
 	_gui-text="Outer contour indent">0.5</param>
-   
-   <param name="curv_coef" type="int"  min="0" max="30" 
+
+   <param name="curv_coef" type="int"  min="0" max="30"
 	_gui-text="Сurvature coefficient (steepness angle)">10</param>
-  
+
   <param name="mode" type="optiongroup" appearance="radio" gui-text="Stroke interpolation type">
         <option value="linear">Linear</option>
         <option value="quadratic">Quadratic</option>
@@ -27,8 +27,9 @@
         <option value="hatch_curv">Curved segments</option>
         <option value="wavy">Wavy line(-)</option>
         <option value="oval">Oval hatch(-)</option>
-
   </param>
+   <param name="len_hatch" type="int"  min="2" max="30"
+	_gui-text="Length of hatch (stroke)">10 </param>
 
   <effect>
     <effects-menu>
