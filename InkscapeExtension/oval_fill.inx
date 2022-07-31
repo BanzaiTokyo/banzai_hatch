@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+  <name> Oval fill </name>
+  <id>org.inkscape.tutorial.oval_fill</id>
+
+  <param name="hatchSpacing" type="int" min="1" max="30" 
+	 _gui-text="DX">10 </param>
+  
+  <param name="len_hatch" type="int"  min="2" max="30"
+	_gui-text="Radius">10 </param>
+
+  <param name="hatchAngle" type="int" min="0" max="90" 
+	_gui-text="Hatch Angle">0</param> 
+ 
+   
+   <param name="outer_dist" type="int"  min="0" max="10"
+	_gui-text="Outer contour indent"></param>
+   
+   <param name="curv_coef" type="int"  min="0" max="10" 
+	_gui-text="Pseudo-human coefficient">10</param>
+  
+ 
+   
+
+  <effect>
+    <effects-menu>
+      <submenu name="!oval_fill - 1"/>
+      
+    </effects-menu>
+  </effect>
+
+  <script>
+    <command location="inx" interpreter="python">oval_fill.py</command>
+  </script>
+
+</inkscape-extension>
