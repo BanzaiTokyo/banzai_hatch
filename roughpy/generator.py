@@ -182,32 +182,6 @@ class RoughGenerator:
                 path += 'L{} {} '.format(data[0], data[1])
         return path.strip()
 
-    def to_paths(self, drawable):
-        sets = drawable.sets or []
-        o = drawable.options or self.default_options
-        paths = []
-        for drawing in sets:
-            path = None
-            if drawing.type == 'path':
-                path = {
-                    'd': self.ops_to_path(drawing),
-                    'stroke': o.stroke,
-                    'strokeWidth': o.stroke_width,
-                    'fill': NOS,
-                }
-            elif drawing.type == 'fillPath':
-                path = {
-                    'd': self.ops_to_path(drawing),
-                    'stroke': NOS,
-                    'strokeWidth': 0,
-                    'fill': o.fill or NOS,
-                }
-            elif drawing.type == 'fillSketch':
-                path = self.fill_sketch(drawing, o)
-            if path:
-                paths.append(path)
-        return paths
-
     def fill_sketch(self, drawing, o):
         fweight = o.fill_weight
         if fweight < 0:

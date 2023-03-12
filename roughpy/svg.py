@@ -23,9 +23,9 @@ class RoughSVG:
                     'path',
                     d=self.ops_to_path(drawing, precision),
                     stroke=o.stroke,
-                    stroke_width=str(o.stroke_width),
                     fill='none'
                 )
+                path.set('stroke-width', str(o.stroke_width))
                 if o.stroke_line_dash:
                     path.set('stroke-dasharray', ' '.join(map(str, o.stroke_line_dash)).strip())
                 if o.stroke_line_dash_offset:
@@ -35,9 +35,9 @@ class RoughSVG:
                     'path',
                     d=self.ops_to_path(drawing, precision),
                     stroke='none',
-                    stroke_width='0',
                     fill=o.fill or ''
                 )
+                path.set('stroke-width', str(o.stroke_width))
                 if drawable.shape == 'curve' or drawable.shape == 'polygon':
                     path.set('fill-rule', 'evenodd')
             elif drawing.type == 'fillSketch':
@@ -54,9 +54,9 @@ class RoughSVG:
             'path',
             d=self.ops_to_path(drawing, o.fixed_decimal_place_digits),
             stroke=o.fill or '',
-            stroke_width=str(fweight),
             fill='none'
         )
+        path.set('stroke-width', str(fweight))
         if o.fill_line_dash:
             path.set('stroke-dasharray', o.fill_line_dash.join(' ').trim())
         if o.fill_line_dash_offset:

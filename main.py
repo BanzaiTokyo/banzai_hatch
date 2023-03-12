@@ -13,13 +13,13 @@ class RoughPy(inkex.EffectExtension):
         self.rough = None
 
     def add_arguments(self, pars):
-        pars.add_argument('--contour', type=bool, default=False, help='Rough the shape itself')
+        pars.add_argument('--contour', type=inkex.Boolean, default=False, help='Rough the shape itself')
         pars.add_argument('--fill_style', type=str, default='hachure', help='Fill Style')
         pars.add_argument('--roughness', type=float, default=1.0, help='Roughness')
         pars.add_argument('--hachure_angle', type=int, default=-45, help='Hachure Angle')
         pars.add_argument('--hachure_gap', type=float, default=-1, help='Hachure Gap')
-        pars.add_argument('--disable_multi_stroke', type=bool, default=False, help='Disable multi-stroke')
-        pars.add_argument('--disable_multi_stroke_fill', type=bool, default=False, help='Disable multi-stroke fill')
+        pars.add_argument('--disable_multi_stroke', type=inkex.Boolean, default=False, help='Disable multi-stroke')
+        pars.add_argument('--disable_multi_stroke_fill', type=inkex.Boolean, default=False, help='Disable multi-stroke fill')
 
     def effect(self):
         if not self.rough:
@@ -64,7 +64,7 @@ class RoughPy(inkex.EffectExtension):
             stroke_width=width,
             fill=color,
             fill_style=self.options.fill_style,
-            fill_weight=width / 2,
+            fill_weight=width,# / 2,
             hachure_angle=self.options.hachure_angle,
             hachure_gap=self.options.hachure_gap,
             disable_multi_stroke=self.options.disable_multi_stroke,
