@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+  <name>Rough.py</name>
+  <id>banzaitokyo.roughpy</id>
+
+  <label appearance="header">Rough.py</label>
+
+  <param name="contour" type="boolean" gui-text="Contour" gui-description="Replace the shape with its rough equivalent">false</param>
+  <param name="fill_style" type="optiongroup" appearance="combo"  gui-text="Fill Style:">
+          <option>hachure</option>
+          <option>solid</option>
+          <option>cross-hatch</option>
+          <option>zigzag</option>
+          <option>zigzag-line</option>
+          <option>dots</option>
+          <option>dashed</option>
+  </param>
+  <param name="roughness" type="float" gui-text="Roughness:">1.0</param>
+  <param name="hachure_angle" type="float" min="0" max="359" gui-text="Hachure Angle:">315</param>
+  <param name="hachure_gap" type="float" min="0.1" gui-text="Hachure Gap:">1</param>
+  <param name="disable_multi_stroke" type="boolean" gui-text="Disable Multi-stroke">false</param>
+  <param name="disable_multi_stroke_fill" type="boolean" gui-text="Disable Multi-stroke Fill">false</param>
+  <label>This extension fills the selected path in your drawing with a path consisting of drawn "hatch" lines.
+Hatched figures will be grouped with their fills. The hatches will be the same color and width as the original object.</label>
+  <effect needs-live-preview="true">
+    <object-type>path</object-type>
+    <menu-tip>Generate plottable hachures inside paths</menu-tip>
+    <effects-menu>
+      <submenu name="Generate from Path"/>
+    </effects-menu>
+  </effect>
+  <script>
+    <command reldir="extensions" interpreter="python">main.py</command>
+  </script>
+</inkscape-extension>
